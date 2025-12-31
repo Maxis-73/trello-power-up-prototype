@@ -37,6 +37,7 @@ TrelloPowerUp.initialize({
                 if (!prioridad) return [];
 
                 return [{
+                    title: 'Prioridad',
                     text: prioridad.text.split('. ')[1], //Quitamos el número del texto de la prioridad (Ej -> 1. Alta Prioridad -> Alta Prioridad)
                     color: CLASE_A_COLOR[prioridad.class] || null
                 }]
