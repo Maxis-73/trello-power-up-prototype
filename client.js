@@ -7,7 +7,7 @@ TrelloPowerUp.initialize({
                 return t.popup({
                     title: 'Seleccionar Prioridad',
                     url: 'selector-prioridad.html',
-                    height: 280
+                    height: 300
                 })
             }
         }];
