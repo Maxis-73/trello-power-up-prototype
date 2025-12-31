@@ -5,16 +5,77 @@ body {
 .button-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
     padding: 8px;
+    height: 100%;
 }
 
 button {
     width: 100%;
-    margin-bottom: 4px;
+    flex: 1;
+    min-height: 36px;
     color: #fff !important;
+    border: none;
+    border-radius: 3px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
 }
 
 button:last-child {
     margin-bottom: 0;
+}
+
+.very-high-priority {
+    background-color: #EB5A46;
+    transition: all 0.2s ease;
+}
+
+.high-priority {
+    background-color: #FFAB4A;
+    transition: all 0.2s ease;
+}
+
+.medium-priority {
+    background-color: #F2D600;
+    transition: all 0.2s ease;
+}
+
+.low-priority {
+    background-color: #61BD4F;
+    transition: all 0.2s ease;
+}
+
+.very-low-priority {
+    background-color: #0079BF;
+    transition: all 0.2s ease;
+}
+
+.remove-priority {
+    background-color: #34373C;
+    transition: all 0.2s ease;
+}
+
+.very-high-priority:hover {
+    background-color: #CF513D;
+}
+
+.high-priority:hover {
+    background-color: #E99E40;
+}
+
+.medium-priority:hover {
+    background-color: #E6C60D;
+}
+
+.low-priority:hover {
+    background-color: #5AAC44;
+}
+
+.very-low-priority:hover {
+    background-color: #025AA7;
+}
+
+.remove-priority:hover {
+    background-color: #3F444B;
 }
