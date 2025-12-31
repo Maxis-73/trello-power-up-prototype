@@ -5,7 +5,7 @@ TrelloPowerUp.initialize({
             text: 'Prioridad',
             callback: function (t) {
                 return t.popup({
-                    title: 'Prioridad',
+                    title: 'Seleccionar Prioridad',
                     url: 'selector-prioridad.html'
                 })
             }
