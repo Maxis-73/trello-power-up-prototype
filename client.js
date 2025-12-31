@@ -14,7 +14,7 @@ TrelloPowerUp.initialize({
             callback: function (t) {
                 return t.popup({
                     title: 'Seleccionar Prioridad',
-                    url: 'selector-prioridad.html',
+                    url: 'views/selector-prioridad.html',
                     height: 300
                 })
             }
@@ -26,7 +26,7 @@ TrelloPowerUp.initialize({
                 if (!prioridad) return [];
 
                 return [{
-                    text: prioridad.text.split('. ')[1], //Quitamos el número del texto de la prioridad (Ej -> 1. Alta Prioridad -> Alta Prioridad)
+                    text: prioridad.text.split('. ')[1],
                     color: CLASE_A_COLOR[prioridad.class] || null
                 }]
             })
@@ -38,7 +38,7 @@ TrelloPowerUp.initialize({
 
                 return [{
                     title: 'Prioridad',
-                    text: prioridad.text.split('. ')[1], //Quitamos el número del texto de la prioridad (Ej -> 1. Alta Prioridad -> Alta Prioridad)
+                    text: prioridad.text.split('. ')[1],
                     color: CLASE_A_COLOR[prioridad.class] || null
                 }]
             })
