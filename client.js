@@ -34,7 +34,11 @@ TrelloPowerUp.initialize({
     'card-detail-badges': function (t, options) {
         return t.get('card', 'shared', 'prioridad')
             .then(function (prioridad) {
-                if (!prioridad) return [];
+                if (!prioridad) return [{
+                    title: 'Prioridad',
+                    text: 'Sin Prioridad',
+                    color: 'white'
+                }];
 
                 return [{
                     title: 'Prioridad',
