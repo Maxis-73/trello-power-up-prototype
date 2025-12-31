@@ -3,16 +3,38 @@
 <head>
     <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css" />
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    <style>
+        body {
+            background-color: #2b2c2f;
+            color: #fff;
+        }
+
+        .button-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 8px;
+        }
+
+        button {
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        button:last-child {
+            margin-bottom: 0;
+        }
+    </style>
 </head>
 
 <body>
-    <div>
+    <div class="button-list">
         <button>1. Alta Prioridad</button>
         <button>2. Alta</button>
         <button>3. Media</button>
         <button>4. Baja</button>
         <button>5. Muy Baja</button>
-        <button>Remover Prioridad</button>
+        <button class="mod-danger">Remover Prioridad</button>
     </div>
 </body>
 
