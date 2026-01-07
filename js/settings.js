@@ -2,7 +2,7 @@ var t = TrelloPowerUp.iframe({
     localization: {
         defaultLocale: 'en',
         supportedLocales: ['en', 'es'],
-        resourceUrl: './strings/{locale}.json'
+        resourceUrl: '../strings/{locale}.json'
     }
 });
 
