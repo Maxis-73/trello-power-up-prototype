@@ -21,5 +21,6 @@
     "msg-error-empty": "All priorities must have a name",
     "msg-restored": "Default values restored. Press \"Save\" to apply.",
     "confirm-reset": "Are you sure you want to restore default priorities? Unsaved changes will be lost.",
-    "loading": "Loading priorities..."
+    "loading": "Loading priorities...",
+    "new-priority": "New Priority"
 }

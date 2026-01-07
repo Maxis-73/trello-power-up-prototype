@@ -21,5 +21,6 @@
     "msg-error-empty": "Todas las prioridades deben tener un nombre",
     "msg-restored": "Se restauraron los valores por defecto. Presiona \"Guardar\" para aplicar.",
     "confirm-reset": "¿Estás seguro de restaurar las prioridades por defecto? Se perderán los cambios no guardados.",
-    "loading": "Cargando prioridades..."
+    "loading": "Cargando prioridades...",
+    "new-priority": "Nueva Prioridad"
 }

@@ -1,13 +1,27 @@
-var t = TrelloPowerUp.iframe();
+var t = TrelloPowerUp.iframe({
+    localization: {
+        defaultLocale: 'en',
+        supportedLocales: ['en', 'es'],
+        resourceUrl: './strings/{locale}.json'
+    }
+});
 
-// Prioridades por defecto
+// Prioridades por defecto (usan nameKey para localización)
 var DEFAULT_PRIORITIES = [
-    { id: '1', name: 'Muy Alta', color: '#EB5A46', badgeColor: 'red' },
-    { id: '2', name: 'Alta', color: '#FFAB4A', badgeColor: 'orange' },
-    { id: '3', name: 'Media', color: '#F2D600', badgeColor: 'yellow' },
-    { id: '4', name: 'Baja', color: '#61BD4F', badgeColor: 'green' },
-    { id: '5', name: 'Muy Baja', color: '#0079BF', badgeColor: 'blue' }
+    { id: '1', nameKey: 'priority-very-high', color: '#EB5A46', badgeColor: 'red' },
+    { id: '2', nameKey: 'priority-high', color: '#FFAB4A', badgeColor: 'orange' },
+    { id: '3', nameKey: 'priority-medium', color: '#F2D600', badgeColor: 'yellow' },
+    { id: '4', nameKey: 'priority-low', color: '#61BD4F', badgeColor: 'green' },
+    { id: '5', nameKey: 'priority-very-low', color: '#0079BF', badgeColor: 'blue' }
 ];
+
+// Función para obtener el nombre mostrable de una prioridad
+function getPriorityDisplayName(priority) {
+    if (priority.nameKey) {
+        return t.localizeKey(priority.nameKey);
+    }
+    return priority.name || '';
+}
 
 // Colores disponibles para badges de Trello
 var BADGE_COLORS = [
@@ -63,8 +77,8 @@ function renderPriorities() {
         // Input para el nombre
         var nameInput = document.createElement('input');
         nameInput.type = 'text';
-        nameInput.value = priority.name;
-        nameInput.placeholder = 'Nombre de la prioridad';
+        nameInput.value = getPriorityDisplayName(priority);
+        nameInput.placeholder = t.localizeKey('placeholder-name');
         nameInput.dataset.field = 'name';
 
         // Input para el color del botón
@@ -100,8 +114,9 @@ function renderPriorities() {
         };
 
         // Eventos de cambio
+        // Cuando el usuario edita el nombre, se convierte en prioridad personalizada (pierde nameKey)
         nameInput.addEventListener('input', function (e) {
-            updatePriority(priority.id, 'name', e.target.value);
+            updatePriorityName(priority.id, e.target.value);
         });
 
         colorInput.addEventListener('input', function (e) {
@@ -132,6 +147,18 @@ function updatePriority(id, field, value) {
     });
 }
 
+// Actualizar el nombre de una prioridad (convierte a personalizada si tenía nameKey)
+function updatePriorityName(id, value) {
+    currentPriorities = currentPriorities.map(function (p) {
+        if (p.id === id) {
+            // Eliminar nameKey y usar name (se convierte en personalizada)
+            delete p.nameKey;
+            p.name = value;
+        }
+        return p;
+    });
+}
+
 // Eliminar una prioridad
 function removePriority(id) {
     currentPriorities = currentPriorities.filter(function (p) {
@@ -144,7 +171,7 @@ function removePriority(id) {
 function addPriority() {
     var newPriority = {
         id: generateId(),
-        name: 'Nueva Prioridad',
+        name: t.localizeKey('new-priority'),
         color: '#6366f1',
         badgeColor: 'purple'
     };
