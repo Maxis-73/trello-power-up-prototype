@@ -223,7 +223,14 @@ function resetToDefaults() {
     if (confirm(t.localizeKey('confirm-reset'))) {
         currentPriorities = JSON.parse(JSON.stringify(DEFAULT_PRIORITIES));
         renderPriorities();
-        showMessage(t.localizeKey('msg-restored'), 'success');
+        // Guardar automáticamente después de restaurar
+        t.set('board', 'shared', 'customPriorities', currentPriorities)
+            .then(function () {
+                showMessage(t.localizeKey('msg-restored'), 'success');
+            })
+            .catch(function (err) {
+                showMessage('Error: ' + err.message, 'error');
+            });
     }
 }
 
