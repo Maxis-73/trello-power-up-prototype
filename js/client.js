@@ -41,7 +41,7 @@ function getPriorityNameById(priorities, priorityId) {
     return found ? found.name : null;
 }
 
-TrelloPowerUp.initialize({
+window.TrelloPowerUp.initialize({
     'board-buttons': function (t, options) {
         return [{
             icon: ICON_SETTINGS,
@@ -157,7 +157,8 @@ TrelloPowerUp.initialize({
                 color: badgeColor
             }];
         });
-    },
+    }
+}, {
     localization: {
         defaultLocale: 'en',
         supportedLocales: ['en', 'es'],
