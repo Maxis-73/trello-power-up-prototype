@@ -185,31 +185,33 @@ function addPriority() {
 
 // Guardar prioridades
 function savePriorities() {
-    // Validar que todas tengan nombre
+    // Validar que todas tengan nombre (name o nameKey)
     var hasEmpty = currentPriorities.some(function (p) {
-        return !p.name || p.name.trim() === '';
+        var hasName = p.name && p.name.trim() !== '';
+        var hasNameKey = p.nameKey && p.nameKey.trim() !== '';
+        return !hasName && !hasNameKey;
     });
 
     if (hasEmpty) {
-        showMessage('Todas las prioridades deben tener un nombre', 'error');
+        showMessage(t.localizeKey('msg-error-empty'), 'error');
         return;
     }
 
     t.set('board', 'shared', 'customPriorities', currentPriorities)
         .then(function () {
-            showMessage('¡Prioridades guardadas correctamente!', 'success');
+            showMessage(t.localizeKey('msg-saved'), 'success');
         })
         .catch(function (err) {
-            showMessage('Error al guardar: ' + err.message, 'error');
+            showMessage('Error: ' + err.message, 'error');
         });
 }
 
 // Restaurar valores por defecto
 function resetToDefaults() {
-    if (confirm('¿Estás seguro de restaurar las prioridades por defecto? Se perderán los cambios no guardados.')) {
+    if (confirm(t.localizeKey('confirm-reset'))) {
         currentPriorities = JSON.parse(JSON.stringify(DEFAULT_PRIORITIES));
         renderPriorities();
-        showMessage('Se restauraron los valores por defecto. Presiona "Guardar" para aplicar.', 'success');
+        showMessage(t.localizeKey('msg-restored'), 'success');
     }
 }
 
@@ -236,5 +238,8 @@ document.getElementById('btn-save').addEventListener('click', savePriorities);
 document.getElementById('btn-reset').addEventListener('click', resetToDefaults);
 
 // Inicializar
-loadPriorities();
+t.render(function () {
+    t.localizeNode(document);
+    loadPriorities();
+});
 

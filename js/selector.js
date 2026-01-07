@@ -1,13 +1,27 @@
-var t = TrelloPowerUp.iframe();
+var t = TrelloPowerUp.iframe({
+    localization: {
+        defaultLocale: 'en',
+        supportedLocales: ['en', 'es'],
+        resourceUrl: './strings/{locale}.json'
+    }
+});
 
-// Prioridades por defecto
+// Prioridades por defecto (usan nameKey para localización)
 var DEFAULT_PRIORITIES = [
-    { id: '1', name: 'Muy Alta', color: '#EB5A46', badgeColor: 'red' },
-    { id: '2', name: 'Alta', color: '#FFAB4A', badgeColor: 'orange' },
-    { id: '3', name: 'Media', color: '#F2D600', badgeColor: 'yellow' },
-    { id: '4', name: 'Baja', color: '#61BD4F', badgeColor: 'green' },
-    { id: '5', name: 'Muy Baja', color: '#0079BF', badgeColor: 'blue' }
+    { id: '1', nameKey: 'priority-very-high', color: '#EB5A46', badgeColor: 'red' },
+    { id: '2', nameKey: 'priority-high', color: '#FFAB4A', badgeColor: 'orange' },
+    { id: '3', nameKey: 'priority-medium', color: '#F2D600', badgeColor: 'yellow' },
+    { id: '4', nameKey: 'priority-low', color: '#61BD4F', badgeColor: 'green' },
+    { id: '5', nameKey: 'priority-very-low', color: '#0079BF', badgeColor: 'blue' }
 ];
+
+// Función para obtener el nombre mostrable de una prioridad
+function getPriorityDisplayName(priority) {
+    if (priority.nameKey) {
+        return t.localizeKey(priority.nameKey);
+    }
+    return priority.name || '';
+}
 
 // Función para oscurecer un color (para hover)
 function darkenColor(hex, percent) {
@@ -53,7 +67,7 @@ function renderPriorities(priorities) {
         var button = document.createElement('button');
         button.className = 'priority-btn priority-' + priority.id;
         button.dataset.priorityId = priority.id;
-        button.textContent = (index + 1) + '. ' + priority.name;
+        button.textContent = (index + 1) + '. ' + getPriorityDisplayName(priority);
 
         // Agregar estilos dinámicos para este botón
         styles += '.priority-' + priority.id + ' { background-color: ' + priority.color + '; }\n';
@@ -66,7 +80,7 @@ function renderPriorities(priorities) {
     var removeBtn = document.createElement('button');
     removeBtn.className = 'priority-btn remove-priority';
     removeBtn.dataset.action = 'remove';
-    removeBtn.textContent = 'Remover Prioridad';
+    removeBtn.textContent = t.localizeKey('remove-priority');
     container.appendChild(removeBtn);
 
     // Aplicar estilos dinámicos
@@ -100,4 +114,7 @@ document.addEventListener('click', function (e) {
 });
 
 // Inicializar
-loadPriorities();
+t.render(function () {
+    t.localizeNode(document);
+    loadPriorities();
+});
