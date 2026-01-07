@@ -48,7 +48,7 @@ TrelloPowerUp.initialize({
             text: t.localizeKey('board-button-settings'),
             callback: function (t) {
                 return t.modal({
-                    title: t.localizeKey('modal-title'),
+                    title: 'Configurar Prioridades',
                     url: 'views/settings.html',
                     height: 500
                 });
