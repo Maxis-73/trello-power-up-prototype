@@ -7,53 +7,12 @@ var ICON_SETTINGS = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg
 
 // Prioridades por defecto (se usan si el usuario no ha configurado las suyas)
 var DEFAULT_PRIORITIES = [
-    { id: '1', nameKey: 'priority-very-high', color: '#EB5A46', badgeColor: 'red' },
-    { id: '2', nameKey: 'priority-high', color: '#FFAB4A', badgeColor: 'orange' },
-    { id: '3', nameKey: 'priority-medium', color: '#F2D600', badgeColor: 'yellow' },
-    { id: '4', nameKey: 'priority-low', color: '#61BD4F', badgeColor: 'green' },
-    { id: '5', nameKey: 'priority-very-low', color: '#0079BF', badgeColor: 'blue' }
+    { id: '1', name: 'Muy Alta', color: '#EB5A46', badgeColor: 'red' },
+    { id: '2', name: 'Alta', color: '#FFAB4A', badgeColor: 'orange' },
+    { id: '3', name: 'Media', color: '#F2D600', badgeColor: 'yellow' },
+    { id: '4', name: 'Baja', color: '#61BD4F', badgeColor: 'green' },
+    { id: '5', name: 'Muy Baja', color: '#0079BF', badgeColor: 'blue' }
 ];
-
-// Traducciones para el conector (t.localizeKey no está disponible en capabilities)
-var TRANSLATIONS = {
-    en: {
-        'board-button-settings': 'Configure Priorities',
-        'card-button-priority': 'Priority',
-        'popup-title': 'Select Priority',
-        'modal-title': 'Configure Priorities',
-        'badge-title': 'Priority',
-        'no-priority': 'No Priority',
-        'priority-very-high': 'Very High',
-        'priority-high': 'High',
-        'priority-medium': 'Medium',
-        'priority-low': 'Low',
-        'priority-very-low': 'Very Low'
-    },
-    es: {
-        'board-button-settings': 'Configurar Prioridades',
-        'card-button-priority': 'Prioridad',
-        'popup-title': 'Seleccionar Prioridad',
-        'modal-title': 'Configurar Prioridades',
-        'badge-title': 'Prioridad',
-        'no-priority': 'Sin Prioridad',
-        'priority-very-high': 'Muy Alta',
-        'priority-high': 'Alta',
-        'priority-medium': 'Media',
-        'priority-low': 'Baja',
-        'priority-very-low': 'Muy Baja'
-    }
-};
-
-// Función para obtener traducción según el idioma del navegador
-function getTranslation(key) {
-    var locale = window.navigator.language || 'en';
-    var lang = locale.split('-')[0]; // 'es-ES' -> 'es'
-
-    if (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) {
-        return TRANSLATIONS[lang][key];
-    }
-    return TRANSLATIONS['en'][key] || key;
-}
 
 // Función auxiliar para obtener las prioridades configuradas
 function getPriorities(t) {
@@ -79,26 +38,17 @@ function getPriorityNameById(priorities, priorityId) {
     var found = priorities.find(function (p) {
         return p.id === priorityId;
     });
-
-    if (!found) return null;
-
-    // Si tiene nameKey, es una prioridad por defecto - traducir
-    if (found.nameKey) {
-        return getTranslation(found.nameKey);
-    }
-
-    // Si tiene name, es una prioridad personalizada - usar directamente
-    return found.name;
+    return found ? found.name : null;
 }
 
-window.TrelloPowerUp.initialize({
+TrelloPowerUp.initialize({
     'board-buttons': function (t, options) {
         return [{
             icon: ICON_SETTINGS,
-            text: getTranslation('board-button-settings'),
+            text: t.localizeKey('board-button-settings'),
             callback: function (t) {
                 return t.modal({
-                    title: getTranslation('modal-title'),
+                    title: t.localizeKey('modal-title'),
                     url: 'views/settings.html',
                     height: 500
                 });
@@ -108,10 +58,10 @@ window.TrelloPowerUp.initialize({
     'card-buttons': function (t, options) {
         return [{
             icon: ICON_FLAG,
-            text: getTranslation('card-button-priority'),
+            text: 'Prioridad',
             callback: function (t) {
                 return t.popup({
-                    title: getTranslation('popup-title'),
+                    title: 'Seleccionar Prioridad',
                     url: 'views/selector-prioridad.html',
                     height: 300
                 });
@@ -128,6 +78,7 @@ window.TrelloPowerUp.initialize({
 
             if (!prioridad) return [];
 
+            // Soporte para formato antiguo (text/class) y nuevo (priorityId)
             var badgeText, badgeColor;
 
             if (prioridad.priorityId) {
@@ -137,6 +88,7 @@ window.TrelloPowerUp.initialize({
             } else if (prioridad.text) {
                 // Formato antiguo - compatibilidad hacia atrás
                 badgeText = prioridad.text.split('. ')[1] || prioridad.text;
+                // Mapeo de clases antiguas a colores
                 var oldClassMap = {
                     'very-high-priority': 'red',
                     'high-priority': 'orange',
@@ -163,17 +115,15 @@ window.TrelloPowerUp.initialize({
             var prioridad = results[0];
             var priorities = results[1];
 
-            var badgeTitle = getTranslation('badge-title');
-            var noPriority = getTranslation('no-priority');
-
             if (!prioridad) {
                 return [{
-                    title: badgeTitle,
-                    text: noPriority,
+                    title: 'Prioridad',
+                    text: 'Sin Prioridad',
                     color: null
                 }];
             }
 
+            // Soporte para formato antiguo y nuevo
             var badgeText, badgeColor;
 
             if (prioridad.priorityId) {
@@ -195,17 +145,22 @@ window.TrelloPowerUp.initialize({
 
             if (!badgeText) {
                 return [{
-                    title: badgeTitle,
-                    text: noPriority,
+                    title: 'Prioridad',
+                    text: 'Sin Prioridad',
                     color: null
                 }];
             }
 
             return [{
-                title: badgeTitle,
+                title: 'Prioridad',
                 text: badgeText,
                 color: badgeColor
             }];
         });
+    },
+    localization: {
+        defaultLocale: 'en',
+        supportedLocales: ['en', 'es'],
+        resourceUrl: './strings/{locale}.json'
     }
 });
