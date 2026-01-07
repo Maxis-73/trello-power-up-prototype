@@ -14,6 +14,47 @@ var DEFAULT_PRIORITIES = [
     { id: '5', nameKey: 'priority-very-low', color: '#0079BF', badgeColor: 'blue' }
 ];
 
+// Traducciones para el conector (t.localizeKey no está disponible en capabilities)
+var TRANSLATIONS = {
+    en: {
+        'board-button-settings': 'Configure Priorities',
+        'card-button-priority': 'Priority',
+        'popup-title': 'Select Priority',
+        'modal-title': 'Configure Priorities',
+        'badge-title': 'Priority',
+        'no-priority': 'No Priority',
+        'priority-very-high': 'Very High',
+        'priority-high': 'High',
+        'priority-medium': 'Medium',
+        'priority-low': 'Low',
+        'priority-very-low': 'Very Low'
+    },
+    es: {
+        'board-button-settings': 'Configurar Prioridades',
+        'card-button-priority': 'Prioridad',
+        'popup-title': 'Seleccionar Prioridad',
+        'modal-title': 'Configurar Prioridades',
+        'badge-title': 'Prioridad',
+        'no-priority': 'Sin Prioridad',
+        'priority-very-high': 'Muy Alta',
+        'priority-high': 'Alta',
+        'priority-medium': 'Media',
+        'priority-low': 'Baja',
+        'priority-very-low': 'Muy Baja'
+    }
+};
+
+// Función para obtener traducción según el idioma del navegador
+function getTranslation(key) {
+    var locale = window.navigator.language || 'en';
+    var lang = locale.split('-')[0]; // 'es-ES' -> 'es'
+
+    if (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) {
+        return TRANSLATIONS[lang][key];
+    }
+    return TRANSLATIONS['en'][key] || key;
+}
+
 // Función auxiliar para obtener las prioridades configuradas
 function getPriorities(t) {
     return t.get('board', 'shared', 'customPriorities')
@@ -33,55 +74,49 @@ function getBadgeColorById(priorities, priorityId) {
     return found ? found.badgeColor : null;
 }
 
-// Función para obtener el nombre de la prioridad por ID (con soporte de localización)
-function getPriorityNameById(t, priorities, priorityId) {
+// Función para obtener el nombre de la prioridad por ID
+function getPriorityNameById(priorities, priorityId) {
     var found = priorities.find(function (p) {
         return p.id === priorityId;
     });
 
-    if (!found) return Promise.resolve(null);
+    if (!found) return null;
 
     // Si tiene nameKey, es una prioridad por defecto - traducir
     if (found.nameKey) {
-        return t.localizeKey(found.nameKey);
+        return getTranslation(found.nameKey);
     }
 
     // Si tiene name, es una prioridad personalizada - usar directamente
-    return Promise.resolve(found.name);
+    return found.name;
 }
 
 window.TrelloPowerUp.initialize({
     'board-buttons': function (t, options) {
-        return t.localizeKeys(['board-button-settings', 'modal-title'])
-            .then(function (keys) {
-                return [{
-                    icon: ICON_SETTINGS,
-                    text: keys['board-button-settings'],
-                    callback: function (t) {
-                        return t.modal({
-                            title: keys['modal-title'],
-                            url: 'views/settings.html',
-                            height: 500
-                        });
-                    }
-                }];
-            });
+        return [{
+            icon: ICON_SETTINGS,
+            text: getTranslation('board-button-settings'),
+            callback: function (t) {
+                return t.modal({
+                    title: getTranslation('modal-title'),
+                    url: 'views/settings.html',
+                    height: 500
+                });
+            }
+        }];
     },
     'card-buttons': function (t, options) {
-        return t.localizeKeys(['card-button-priority', 'popup-title'])
-            .then(function (keys) {
-                return [{
-                    icon: ICON_FLAG,
-                    text: keys['card-button-priority'],
-                    callback: function (t) {
-                        return t.popup({
-                            title: keys['popup-title'],
-                            url: 'views/selector-prioridad.html',
-                            height: 300
-                        });
-                    }
-                }];
-            });
+        return [{
+            icon: ICON_FLAG,
+            text: getTranslation('card-button-priority'),
+            callback: function (t) {
+                return t.popup({
+                    title: getTranslation('popup-title'),
+                    url: 'views/selector-prioridad.html',
+                    height: 300
+                });
+            }
+        }];
     },
     'card-badges': function (t, options) {
         return Promise.all([
@@ -93,22 +128,15 @@ window.TrelloPowerUp.initialize({
 
             if (!prioridad) return [];
 
-            var badgeColor;
+            var badgeText, badgeColor;
 
             if (prioridad.priorityId) {
                 // Formato nuevo
+                badgeText = getPriorityNameById(priorities, prioridad.priorityId);
                 badgeColor = getBadgeColorById(priorities, prioridad.priorityId);
-                return getPriorityNameById(t, priorities, prioridad.priorityId)
-                    .then(function (badgeText) {
-                        if (!badgeText) return [];
-                        return [{
-                            text: badgeText,
-                            color: badgeColor
-                        }];
-                    });
             } else if (prioridad.text) {
                 // Formato antiguo - compatibilidad hacia atrás
-                var badgeText = prioridad.text.split('. ')[1] || prioridad.text;
+                badgeText = prioridad.text.split('. ')[1] || prioridad.text;
                 var oldClassMap = {
                     'very-high-priority': 'red',
                     'high-priority': 'orange',
@@ -117,56 +145,44 @@ window.TrelloPowerUp.initialize({
                     'very-low-priority': 'blue'
                 };
                 badgeColor = oldClassMap[prioridad.class] || null;
-                return [{
-                    text: badgeText,
-                    color: badgeColor
-                }];
             }
 
-            return [];
+            if (!badgeText) return [];
+
+            return [{
+                text: badgeText,
+                color: badgeColor
+            }];
         });
     },
     'card-detail-badges': function (t, options) {
         return Promise.all([
             t.get('card', 'shared', 'prioridad'),
-            getPriorities(t),
-            t.localizeKeys(['badge-title', 'no-priority'])
+            getPriorities(t)
         ]).then(function (results) {
             var prioridad = results[0];
             var priorities = results[1];
-            var keys = results[2];
+
+            var badgeTitle = getTranslation('badge-title');
+            var noPriority = getTranslation('no-priority');
 
             if (!prioridad) {
                 return [{
-                    title: keys['badge-title'],
-                    text: keys['no-priority'],
+                    title: badgeTitle,
+                    text: noPriority,
                     color: null
                 }];
             }
 
-            var badgeColor;
+            var badgeText, badgeColor;
 
             if (prioridad.priorityId) {
                 // Formato nuevo
+                badgeText = getPriorityNameById(priorities, prioridad.priorityId);
                 badgeColor = getBadgeColorById(priorities, prioridad.priorityId);
-                return getPriorityNameById(t, priorities, prioridad.priorityId)
-                    .then(function (badgeText) {
-                        if (!badgeText) {
-                            return [{
-                                title: keys['badge-title'],
-                                text: keys['no-priority'],
-                                color: null
-                            }];
-                        }
-                        return [{
-                            title: keys['badge-title'],
-                            text: badgeText,
-                            color: badgeColor
-                        }];
-                    });
             } else if (prioridad.text) {
                 // Formato antiguo - compatibilidad hacia atrás
-                var badgeText = prioridad.text.split('. ')[1] || prioridad.text;
+                badgeText = prioridad.text.split('. ')[1] || prioridad.text;
                 var oldClassMap = {
                     'very-high-priority': 'red',
                     'high-priority': 'orange',
@@ -175,24 +191,21 @@ window.TrelloPowerUp.initialize({
                     'very-low-priority': 'blue'
                 };
                 badgeColor = oldClassMap[prioridad.class] || null;
+            }
+
+            if (!badgeText) {
                 return [{
-                    title: keys['badge-title'],
-                    text: badgeText,
-                    color: badgeColor
+                    title: badgeTitle,
+                    text: noPriority,
+                    color: null
                 }];
             }
 
             return [{
-                title: keys['badge-title'],
-                text: keys['no-priority'],
-                color: null
+                title: badgeTitle,
+                text: badgeText,
+                color: badgeColor
             }];
         });
-    }
-}, {
-    localization: {
-        defaultLocale: 'en',
-        supportedLocales: ['en', 'es'],
-        resourceUrl: './strings/{locale}.json'
     }
 });
