@@ -1,0 +1,213 @@
+var t = TrelloPowerUp.iframe();
+
+// Prioridades por defecto
+var DEFAULT_PRIORITIES = [
+    { id: '1', name: 'Muy Alta', color: '#EB5A46', badgeColor: 'red' },
+    { id: '2', name: 'Alta', color: '#FFAB4A', badgeColor: 'orange' },
+    { id: '3', name: 'Media', color: '#F2D600', badgeColor: 'yellow' },
+    { id: '4', name: 'Baja', color: '#61BD4F', badgeColor: 'green' },
+    { id: '5', name: 'Muy Baja', color: '#0079BF', badgeColor: 'blue' }
+];
+
+// Colores disponibles para badges de Trello
+var BADGE_COLORS = [
+    { value: 'red', label: 'Rojo', hex: '#EB5A46' },
+    { value: 'orange', label: 'Naranja', hex: '#FFAB4A' },
+    { value: 'yellow', label: 'Amarillo', hex: '#F2D600' },
+    { value: 'green', label: 'Verde', hex: '#61BD4F' },
+    { value: 'blue', label: 'Azul', hex: '#0079BF' },
+    { value: 'purple', label: 'Púrpura', hex: '#C377E0' },
+    { value: 'pink', label: 'Rosa', hex: '#FF80CE' },
+    { value: 'sky', label: 'Celeste', hex: '#00C2E0' },
+    { value: 'lime', label: 'Lima', hex: '#51E898' },
+    { value: 'light-gray', label: 'Gris Claro', hex: '#C4C9CC' }
+];
+
+var currentPriorities = [];
+
+// Generar ID único
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Mostrar mensaje
+function showMessage(text, type) {
+    var container = document.getElementById('message-container');
+    container.innerHTML = '<div class="message ' + type + '">' + text + '</div>';
+    setTimeout(function () {
+        container.innerHTML = '';
+    }, 3000);
+}
+
+// Renderizar lista de prioridades
+function renderPriorities() {
+    var container = document.getElementById('priorities-list');
+
+    if (currentPriorities.length === 0) {
+        container.innerHTML = '<div class="empty-state">No hay prioridades definidas. Agrega una nueva prioridad.</div>';
+        return;
+    }
+
+    container.innerHTML = '';
+
+    currentPriorities.forEach(function (priority, index) {
+        var item = document.createElement('div');
+        item.className = 'priority-item';
+        item.dataset.id = priority.id;
+
+        // Número de orden
+        var orderNum = document.createElement('span');
+        orderNum.className = 'order-number';
+        orderNum.textContent = index + 1;
+
+        // Input para el nombre
+        var nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.value = priority.name;
+        nameInput.placeholder = 'Nombre de la prioridad';
+        nameInput.dataset.field = 'name';
+
+        // Input para el color del botón
+        var colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = priority.color;
+        colorInput.title = 'Color del botón';
+        colorInput.dataset.field = 'color';
+
+        // Select para el color del badge
+        var badgeSelect = document.createElement('select');
+        badgeSelect.className = 'badge-color-select';
+        badgeSelect.title = 'Color del badge en Trello';
+        badgeSelect.dataset.field = 'badgeColor';
+
+        BADGE_COLORS.forEach(function (bc) {
+            var option = document.createElement('option');
+            option.value = bc.value;
+            option.textContent = bc.label;
+            if (priority.badgeColor === bc.value) {
+                option.selected = true;
+            }
+            badgeSelect.appendChild(option);
+        });
+
+        // Botón eliminar
+        var removeBtn = document.createElement('button');
+        removeBtn.className = 'btn-remove';
+        removeBtn.textContent = '✕';
+        removeBtn.title = 'Eliminar prioridad';
+        removeBtn.onclick = function () {
+            removePriority(priority.id);
+        };
+
+        // Eventos de cambio
+        nameInput.addEventListener('input', function (e) {
+            updatePriority(priority.id, 'name', e.target.value);
+        });
+
+        colorInput.addEventListener('input', function (e) {
+            updatePriority(priority.id, 'color', e.target.value);
+        });
+
+        badgeSelect.addEventListener('change', function (e) {
+            updatePriority(priority.id, 'badgeColor', e.target.value);
+        });
+
+        item.appendChild(orderNum);
+        item.appendChild(nameInput);
+        item.appendChild(colorInput);
+        item.appendChild(badgeSelect);
+        item.appendChild(removeBtn);
+
+        container.appendChild(item);
+    });
+}
+
+// Actualizar una prioridad
+function updatePriority(id, field, value) {
+    currentPriorities = currentPriorities.map(function (p) {
+        if (p.id === id) {
+            p[field] = value;
+        }
+        return p;
+    });
+}
+
+// Eliminar una prioridad
+function removePriority(id) {
+    currentPriorities = currentPriorities.filter(function (p) {
+        return p.id !== id;
+    });
+    renderPriorities();
+}
+
+// Agregar nueva prioridad
+function addPriority() {
+    var newPriority = {
+        id: generateId(),
+        name: 'Nueva Prioridad',
+        color: '#6366f1',
+        badgeColor: 'purple'
+    };
+    currentPriorities.push(newPriority);
+    renderPriorities();
+
+    // Hacer scroll al nuevo elemento
+    var container = document.getElementById('priorities-list');
+    container.scrollTop = container.scrollHeight;
+}
+
+// Guardar prioridades
+function savePriorities() {
+    // Validar que todas tengan nombre
+    var hasEmpty = currentPriorities.some(function (p) {
+        return !p.name || p.name.trim() === '';
+    });
+
+    if (hasEmpty) {
+        showMessage('Todas las prioridades deben tener un nombre', 'error');
+        return;
+    }
+
+    t.set('board', 'shared', 'customPriorities', currentPriorities)
+        .then(function () {
+            showMessage('¡Prioridades guardadas correctamente!', 'success');
+        })
+        .catch(function (err) {
+            showMessage('Error al guardar: ' + err.message, 'error');
+        });
+}
+
+// Restaurar valores por defecto
+function resetToDefaults() {
+    if (confirm('¿Estás seguro de restaurar las prioridades por defecto? Se perderán los cambios no guardados.')) {
+        currentPriorities = JSON.parse(JSON.stringify(DEFAULT_PRIORITIES));
+        renderPriorities();
+        showMessage('Se restauraron los valores por defecto. Presiona "Guardar" para aplicar.', 'success');
+    }
+}
+
+// Cargar prioridades al iniciar
+function loadPriorities() {
+    t.get('board', 'shared', 'customPriorities')
+        .then(function (savedPriorities) {
+            if (savedPriorities && savedPriorities.length > 0) {
+                currentPriorities = savedPriorities;
+            } else {
+                currentPriorities = JSON.parse(JSON.stringify(DEFAULT_PRIORITIES));
+            }
+            renderPriorities();
+        })
+        .catch(function () {
+            currentPriorities = JSON.parse(JSON.stringify(DEFAULT_PRIORITIES));
+            renderPriorities();
+        });
+}
+
+// Event listeners
+document.getElementById('btn-add').addEventListener('click', addPriority);
+document.getElementById('btn-save').addEventListener('click', savePriorities);
+document.getElementById('btn-reset').addEventListener('click', resetToDefaults);
+
+// Inicializar
+loadPriorities();
+

@@ -1,18 +1,64 @@
+<!DOCTYPE html>
 <html>
 
 <head>
-    <link rel="stylesheet" href="../css/selector-styles.css">
+    <meta charset="utf-8">
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: #2b2c2f;
+        }
+
+        #button-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px;
+            height: 100%;
+        }
+
+        .priority-btn {
+            width: 100%;
+            flex: 1;
+            min-height: 36px;
+            color: #fff !important;
+            border: none;
+            border-radius: 3px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .priority-btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .remove-priority {
+            background-color: #34373C;
+        }
+
+        .remove-priority:hover {
+            background-color: #3F444B;
+        }
+
+        .loading {
+            color: #a1a1aa;
+            text-align: center;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+    </style>
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
 </head>
 
 <body>
-    <div class="button-list">
-        <button class="very-high-priority">1. Alta Prioridad</button>
-        <button class="high-priority">2. Alta</button>
-        <button class="medium-priority">3. Media</button>
-        <button class="low-priority">4. Baja</button>
-        <button class="very-low-priority">5. Muy Baja</button>
-        <button class="remove-priority">Remover Prioridad</button>
+    <div id="button-list">
+        <div class="loading">Cargando prioridades...</div>
     </div>
     <script src="../js/selector.js"></script>
 </body>

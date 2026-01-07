@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #1a1b1e;
+            color: #e4e4e7;
+            min-height: 100%;
+        }
+
+        .container {
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin: 0 0 8px 0;
+            color: #fff;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #a1a1aa;
+            margin-bottom: 20px;
+        }
+
+        .priorities-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .priority-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #27272a;
+            border-radius: 8px;
+            border: 1px solid #3f3f46;
+        }
+
+        .priority-item .drag-handle {
+            cursor: grab;
+            color: #71717a;
+            font-size: 16px;
+        }
+
+        .priority-item input[type="text"] {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            background: #18181b;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .priority-item input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .priority-item input[type="color"] {
+            width: 40px;
+            height: 36px;
+            padding: 2px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .priority-item input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .priority-item input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 4px;
+        }
+
+        .btn-remove {
+            padding: 6px 10px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn-remove:hover {
+            background: #b91c1c;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #3f3f46;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #52525b;
+        }
+
+        .btn-success {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+        }
+
+        .color-preview {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .badge-color-select {
+            padding: 6px 10px;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            background: #18181b;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .badge-color-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .message {
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .message.success {
+            background: #14532d;
+            color: #86efac;
+            border: 1px solid #22c55e;
+        }
+
+        .message.error {
+            background: #450a0a;
+            color: #fca5a5;
+            border: 1px solid #dc2626;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #71717a;
+        }
+
+        .order-number {
+            width: 24px;
+            height: 24px;
+            background: #3f3f46;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #a1a1aa;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>⚙️ Configurar Prioridades</h1>
+        <p class="subtitle">Define los niveles de prioridad que aparecerán en tus tarjetas. Puedes agregar, editar o eliminar prioridades.</p>
+
+        <div id="message-container"></div>
+
+        <div id="priorities-list" class="priorities-list">
+            <!-- Las prioridades se cargarán dinámicamente -->
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-secondary" id="btn-add">+ Agregar Prioridad</button>
+            <button class="btn btn-success" id="btn-save">💾 Guardar Cambios</button>
+            <button class="btn btn-primary" id="btn-reset">🔄 Restaurar Valores</button>
+        </div>
+    </div>
+
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    <script src="../js/settings.js"></script>
+</body>
+
+</html>
+
