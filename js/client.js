@@ -109,7 +109,6 @@ window.TrelloPowerUp.initialize({
 
             if (!badgeText) return [];
 
-            console.log("card-badges", badgeText, badgeColor);
             return [{
                 text: badgeText,
                 color: badgeColor
@@ -164,7 +163,6 @@ window.TrelloPowerUp.initialize({
                 }];
             }
 
-            console.log("card-detail-badges", badgeText, badgeColor);
             return [{
                 title: t.localizeKey('badge-title'),
                 text: badgeText,

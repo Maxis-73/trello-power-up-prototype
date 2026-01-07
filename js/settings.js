@@ -124,7 +124,15 @@ function renderPriorities() {
         });
 
         badgeSelect.addEventListener('change', function (e) {
+            var selectedColor = BADGE_COLORS.find(function (bc) {
+                return bc.value === e.target.value;
+            });
             updatePriority(priority.id, 'badgeColor', e.target.value);
+            // Sincronizar el color del botón con el color del badge
+            if (selectedColor) {
+                updatePriority(priority.id, 'color', selectedColor.hex);
+                colorInput.value = selectedColor.hex;
+            }
         });
 
         item.appendChild(orderNum);
@@ -169,10 +177,14 @@ function removePriority(id) {
 
 // Agregar nueva prioridad
 function addPriority() {
+    // Usar el color hex del badge purple para que coincidan
+    var defaultBadgeColor = BADGE_COLORS.find(function (bc) {
+        return bc.value === 'purple';
+    });
     var newPriority = {
         id: generateId(),
         name: t.localizeKey('new-priority'),
-        color: '#6366f1',
+        color: defaultBadgeColor ? defaultBadgeColor.hex : '#C377E0',
         badgeColor: 'purple'
     };
     currentPriorities.push(newPriority);
