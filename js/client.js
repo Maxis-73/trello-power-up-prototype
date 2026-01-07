@@ -14,65 +14,6 @@ var DEFAULT_PRIORITIES = [
     { id: '5', nameKey: 'priority-very-low', color: '#0079BF', badgeColor: 'blue' }
 ];
 
-// Traducciones inline para el conector (t.localizeKey no está disponible aquí)
-var TRANSLATIONS = {
-    en: {
-        'board-button-settings': 'Configure Priorities',
-        'card-button-priority': 'Priority',
-        'popup-title': 'Select Priority',
-        'modal-title': 'Configure Priorities',
-        'badge-title': 'Priority',
-        'no-priority': 'No Priority',
-        'priority-very-high': 'Very High',
-        'priority-high': 'High',
-        'priority-medium': 'Medium',
-        'priority-low': 'Low',
-        'priority-very-low': 'Very Low'
-    },
-    es: {
-        'board-button-settings': 'Configurar Prioridades',
-        'card-button-priority': 'Prioridad',
-        'popup-title': 'Seleccionar Prioridad',
-        'modal-title': 'Configurar Prioridades',
-        'badge-title': 'Prioridad',
-        'no-priority': 'Sin Prioridad',
-        'priority-very-high': 'Muy Alta',
-        'priority-high': 'Alta',
-        'priority-medium': 'Media',
-        'priority-low': 'Baja',
-        'priority-very-low': 'Muy Baja'
-    }
-};
-
-// Función para obtener traducción según el locale del miembro
-function getTranslation(t, key) {
-    return t.member('id')
-        .then(function () {
-            // Intentar obtener el locale del navegador/Trello
-            var locale = window.navigator.language || 'en';
-            var lang = locale.split('-')[0]; // 'es-ES' -> 'es'
-
-            if (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) {
-                return TRANSLATIONS[lang][key];
-            }
-            return TRANSLATIONS['en'][key] || key;
-        })
-        .catch(function () {
-            return TRANSLATIONS['en'][key] || key;
-        });
-}
-
-// Función para obtener traducción de forma síncrona (fallback)
-function getTranslationSync(key) {
-    var locale = window.navigator.language || 'en';
-    var lang = locale.split('-')[0];
-
-    if (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) {
-        return TRANSLATIONS[lang][key];
-    }
-    return TRANSLATIONS['en'][key] || key;
-}
-
 // Función auxiliar para obtener las prioridades configuradas
 function getPriorities(t) {
     return t.get('board', 'shared', 'customPriorities')
@@ -92,49 +33,55 @@ function getBadgeColorById(priorities, priorityId) {
     return found ? found.badgeColor : null;
 }
 
-// Función para obtener el nombre de la prioridad por ID
-function getPriorityNameById(priorities, priorityId) {
+// Función para obtener el nombre de la prioridad por ID (con soporte de localización)
+function getPriorityNameById(t, priorities, priorityId) {
     var found = priorities.find(function (p) {
         return p.id === priorityId;
     });
 
-    if (!found) return null;
+    if (!found) return Promise.resolve(null);
 
     // Si tiene nameKey, es una prioridad por defecto - traducir
     if (found.nameKey) {
-        return getTranslationSync(found.nameKey);
+        return t.localizeKey(found.nameKey);
     }
 
     // Si tiene name, es una prioridad personalizada - usar directamente
-    return found.name;
+    return Promise.resolve(found.name);
 }
 
-TrelloPowerUp.initialize({
+window.TrelloPowerUp.initialize({
     'board-buttons': function (t, options) {
-        return [{
-            icon: ICON_SETTINGS,
-            text: getTranslationSync('board-button-settings'),
-            callback: function (t) {
-                return t.modal({
-                    title: getTranslationSync('modal-title'),
-                    url: 'views/settings.html',
-                    height: 500
-                });
-            }
-        }];
+        return t.localizeKeys(['board-button-settings', 'modal-title'])
+            .then(function (keys) {
+                return [{
+                    icon: ICON_SETTINGS,
+                    text: keys['board-button-settings'],
+                    callback: function (t) {
+                        return t.modal({
+                            title: keys['modal-title'],
+                            url: 'views/settings.html',
+                            height: 500
+                        });
+                    }
+                }];
+            });
     },
     'card-buttons': function (t, options) {
-        return [{
-            icon: ICON_FLAG,
-            text: getTranslationSync('card-button-priority'),
-            callback: function (t) {
-                return t.popup({
-                    title: getTranslationSync('popup-title'),
-                    url: 'views/selector-prioridad.html',
-                    height: 300
-                });
-            }
-        }];
+        return t.localizeKeys(['card-button-priority', 'popup-title'])
+            .then(function (keys) {
+                return [{
+                    icon: ICON_FLAG,
+                    text: keys['card-button-priority'],
+                    callback: function (t) {
+                        return t.popup({
+                            title: keys['popup-title'],
+                            url: 'views/selector-prioridad.html',
+                            height: 300
+                        });
+                    }
+                }];
+            });
     },
     'card-badges': function (t, options) {
         return Promise.all([
@@ -146,15 +93,22 @@ TrelloPowerUp.initialize({
 
             if (!prioridad) return [];
 
-            var badgeText, badgeColor;
+            var badgeColor;
 
             if (prioridad.priorityId) {
                 // Formato nuevo
-                badgeText = getPriorityNameById(priorities, prioridad.priorityId);
                 badgeColor = getBadgeColorById(priorities, prioridad.priorityId);
+                return getPriorityNameById(t, priorities, prioridad.priorityId)
+                    .then(function (badgeText) {
+                        if (!badgeText) return [];
+                        return [{
+                            text: badgeText,
+                            color: badgeColor
+                        }];
+                    });
             } else if (prioridad.text) {
                 // Formato antiguo - compatibilidad hacia atrás
-                badgeText = prioridad.text.split('. ')[1] || prioridad.text;
+                var badgeText = prioridad.text.split('. ')[1] || prioridad.text;
                 var oldClassMap = {
                     'very-high-priority': 'red',
                     'high-priority': 'orange',
@@ -163,44 +117,56 @@ TrelloPowerUp.initialize({
                     'very-low-priority': 'blue'
                 };
                 badgeColor = oldClassMap[prioridad.class] || null;
+                return [{
+                    text: badgeText,
+                    color: badgeColor
+                }];
             }
 
-            if (!badgeText) return [];
-
-            return [{
-                text: badgeText,
-                color: badgeColor
-            }];
+            return [];
         });
     },
     'card-detail-badges': function (t, options) {
         return Promise.all([
             t.get('card', 'shared', 'prioridad'),
-            getPriorities(t)
+            getPriorities(t),
+            t.localizeKeys(['badge-title', 'no-priority'])
         ]).then(function (results) {
             var prioridad = results[0];
             var priorities = results[1];
-
-            var badgeTitle = getTranslationSync('badge-title');
-            var noPriority = getTranslationSync('no-priority');
+            var keys = results[2];
 
             if (!prioridad) {
                 return [{
-                    title: badgeTitle,
-                    text: noPriority,
+                    title: keys['badge-title'],
+                    text: keys['no-priority'],
                     color: null
                 }];
             }
 
-            var badgeText, badgeColor;
+            var badgeColor;
 
             if (prioridad.priorityId) {
                 // Formato nuevo
-                badgeText = getPriorityNameById(priorities, prioridad.priorityId);
                 badgeColor = getBadgeColorById(priorities, prioridad.priorityId);
+                return getPriorityNameById(t, priorities, prioridad.priorityId)
+                    .then(function (badgeText) {
+                        if (!badgeText) {
+                            return [{
+                                title: keys['badge-title'],
+                                text: keys['no-priority'],
+                                color: null
+                            }];
+                        }
+                        return [{
+                            title: keys['badge-title'],
+                            text: badgeText,
+                            color: badgeColor
+                        }];
+                    });
             } else if (prioridad.text) {
                 // Formato antiguo - compatibilidad hacia atrás
-                badgeText = prioridad.text.split('. ')[1] || prioridad.text;
+                var badgeText = prioridad.text.split('. ')[1] || prioridad.text;
                 var oldClassMap = {
                     'very-high-priority': 'red',
                     'high-priority': 'orange',
@@ -209,21 +175,24 @@ TrelloPowerUp.initialize({
                     'very-low-priority': 'blue'
                 };
                 badgeColor = oldClassMap[prioridad.class] || null;
-            }
-
-            if (!badgeText) {
                 return [{
-                    title: badgeTitle,
-                    text: noPriority,
-                    color: null
+                    title: keys['badge-title'],
+                    text: badgeText,
+                    color: badgeColor
                 }];
             }
 
             return [{
-                title: badgeTitle,
-                text: badgeText,
-                color: badgeColor
+                title: keys['badge-title'],
+                text: keys['no-priority'],
+                color: null
             }];
         });
+    }
+}, {
+    localization: {
+        defaultLocale: 'en',
+        supportedLocales: ['en', 'es'],
+        resourceUrl: './strings/{locale}.json'
     }
 });
