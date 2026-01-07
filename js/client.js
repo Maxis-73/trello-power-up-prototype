@@ -6,12 +6,13 @@ var ICON_FLAG = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" vi
 var ICON_SETTINGS = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2"%3E%3Ccircle cx="12" cy="12" r="3"%3E%3C/circle%3E%3Cpath d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"%3E%3C/path%3E%3C/svg%3E';
 
 // Prioridades por defecto (se usan si el usuario no ha configurado las suyas)
+// Usan nameKey para traducción automática según el idioma del usuario
 var DEFAULT_PRIORITIES = [
-    { id: '1', name: 'Muy Alta', color: '#EB5A46', badgeColor: 'red' },
-    { id: '2', name: 'Alta', color: '#FFAB4A', badgeColor: 'orange' },
-    { id: '3', name: 'Media', color: '#F2D600', badgeColor: 'yellow' },
-    { id: '4', name: 'Baja', color: '#61BD4F', badgeColor: 'green' },
-    { id: '5', name: 'Muy Baja', color: '#0079BF', badgeColor: 'blue' }
+    { id: '1', nameKey: 'priority-very-high', color: '#EB5A46', badgeColor: 'red' },
+    { id: '2', nameKey: 'priority-high', color: '#FFAB4A', badgeColor: 'orange' },
+    { id: '3', nameKey: 'priority-medium', color: '#F2D600', badgeColor: 'yellow' },
+    { id: '4', nameKey: 'priority-low', color: '#61BD4F', badgeColor: 'green' },
+    { id: '5', nameKey: 'priority-very-low', color: '#0079BF', badgeColor: 'blue' }
 ];
 
 // Función auxiliar para obtener las prioridades configuradas
@@ -34,11 +35,14 @@ function getBadgeColorById(priorities, priorityId) {
 }
 
 // Función para obtener el nombre de la prioridad por ID
-function getPriorityNameById(priorities, priorityId) {
+// Si tiene nameKey, devuelve la clave para traducir; si tiene name, devuelve el nombre directo
+function getPriorityNameById(t, priorities, priorityId) {
     var found = priorities.find(function (p) {
         return p.id === priorityId;
     });
-    return found ? found.name : null;
+    if (!found) return null;
+    // Si tiene nameKey (prioridad por defecto), traducir; si tiene name (personalizada), usar directo
+    return found.nameKey ? t.localizeKey(found.nameKey) : found.name;
 }
 
 window.TrelloPowerUp.initialize({
@@ -48,7 +52,7 @@ window.TrelloPowerUp.initialize({
             text: t.localizeKey('board-button-settings'),
             callback: function (t) {
                 return t.modal({
-                    title: 'Configurar Prioridades',
+                    title: t.localizeKey('modal-title'),
                     url: 'views/settings.html',
                     height: 500
                 });
@@ -83,7 +87,7 @@ window.TrelloPowerUp.initialize({
 
             if (prioridad.priorityId) {
                 // Formato nuevo
-                badgeText = getPriorityNameById(priorities, prioridad.priorityId);
+                badgeText = getPriorityNameById(t, priorities, prioridad.priorityId);
                 badgeColor = getBadgeColorById(priorities, prioridad.priorityId);
             } else if (prioridad.text) {
                 // Formato antiguo - compatibilidad hacia atrás
@@ -128,7 +132,7 @@ window.TrelloPowerUp.initialize({
 
             if (prioridad.priorityId) {
                 // Formato nuevo
-                badgeText = getPriorityNameById(priorities, prioridad.priorityId);
+                badgeText = getPriorityNameById(t, priorities, prioridad.priorityId);
                 badgeColor = getBadgeColorById(priorities, prioridad.priorityId);
             } else if (prioridad.text) {
                 // Formato antiguo - compatibilidad hacia atrás
@@ -152,7 +156,7 @@ window.TrelloPowerUp.initialize({
             }
 
             return [{
-                title: 'Prioridad',
+                title: t.localizeKey('badge-title'),
                 text: badgeText,
                 color: badgeColor
             }];
