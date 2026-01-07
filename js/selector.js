@@ -1,12 +1,18 @@
-var t = TrelloPowerUp.iframe();
+var t = TrelloPowerUp.iframe({
+    localization: {
+        defaultLocale: 'en',
+        supportedLocales: ['en', 'es'],
+        resourceUrl: '../strings/{locale}.json'
+    }
+});
 
 // Prioridades por defecto
 var DEFAULT_PRIORITIES = [
-    { id: '1', name: 'Muy Alta', color: '#EB5A46', badgeColor: 'red' },
-    { id: '2', name: 'Alta', color: '#FFAB4A', badgeColor: 'orange' },
-    { id: '3', name: 'Media', color: '#F2D600', badgeColor: 'yellow' },
-    { id: '4', name: 'Baja', color: '#61BD4F', badgeColor: 'green' },
-    { id: '5', name: 'Muy Baja', color: '#0079BF', badgeColor: 'blue' }
+    { id: '1', nameKey: 'priority-very-high', color: '#EB5A46', badgeColor: 'red' },
+    { id: '2', nameKey: 'priority-high', color: '#FFAB4A', badgeColor: 'orange' },
+    { id: '3', nameKey: 'priority-medium', color: '#F2D600', badgeColor: 'yellow' },
+    { id: '4', nameKey: 'priority-low', color: '#61BD4F', badgeColor: 'green' },
+    { id: '5', nameKey: 'priority-very-low', color: '#0079BF', badgeColor: 'blue' }
 ];
 
 // Función para oscurecer un color (para hover)
@@ -24,6 +30,10 @@ function darkenColor(hex, percent) {
 
 // Cargar y renderizar las prioridades
 function loadPriorities() {
+    t.localizeKey('loading').then(function (loadingText) {
+        document.getElementById('button-list').innerHTML = '<div class="loading">' + loadingText + '</div>';
+    });
+
     t.get('board', 'shared', 'customPriorities')
         .then(function (priorities) {
             var prioritiesToUse = (priorities && priorities.length > 0) ? priorities : DEFAULT_PRIORITIES;
@@ -49,28 +59,41 @@ function renderPriorities(priorities) {
 
     var styles = '';
 
-    priorities.forEach(function (priority, index) {
-        var button = document.createElement('button');
-        button.className = 'priority-btn priority-' + priority.id;
-        button.dataset.priorityId = priority.id;
-        button.textContent = (index + 1) + '. ' + priority.name;
-
-        // Agregar estilos dinámicos para este botón
-        styles += '.priority-' + priority.id + ' { background-color: ' + priority.color + '; }\n';
-        styles += '.priority-' + priority.id + ':hover { background-color: ' + darkenColor(priority.color, 10) + '; }\n';
-
-        container.appendChild(button);
+    // Recopilar las claves de traducción necesarias
+    var keysToTranslate = ['remove-priority'];
+    priorities.forEach(function (priority) {
+        if (priority.nameKey) {
+            keysToTranslate.push(priority.nameKey);
+        }
     });
 
-    // Botón para remover prioridad
-    var removeBtn = document.createElement('button');
-    removeBtn.className = 'priority-btn remove-priority';
-    removeBtn.dataset.action = 'remove';
-    removeBtn.textContent = 'Remover Prioridad';
-    container.appendChild(removeBtn);
+    t.localizeKeys(keysToTranslate).then(function (translations) {
+        priorities.forEach(function (priority, index) {
+            var button = document.createElement('button');
+            button.className = 'priority-btn priority-' + priority.id;
+            button.dataset.priorityId = priority.id;
 
-    // Aplicar estilos dinámicos
-    styleElement.textContent = styles;
+            // Usar traducción si existe nameKey, sino usar name
+            var displayName = priority.nameKey ? translations[priority.nameKey] : priority.name;
+            button.textContent = (index + 1) + '. ' + displayName;
+
+            // Agregar estilos dinámicos para este botón
+            styles += '.priority-' + priority.id + ' { background-color: ' + priority.color + '; }\n';
+            styles += '.priority-' + priority.id + ':hover { background-color: ' + darkenColor(priority.color, 10) + '; }\n';
+
+            container.appendChild(button);
+        });
+
+        // Botón para remover prioridad
+        var removeBtn = document.createElement('button');
+        removeBtn.className = 'priority-btn remove-priority';
+        removeBtn.dataset.action = 'remove';
+        removeBtn.textContent = translations['remove-priority'];
+        container.appendChild(removeBtn);
+
+        // Aplicar estilos dinámicos
+        styleElement.textContent = styles;
+    });
 }
 
 // Manejar clics en los botones
