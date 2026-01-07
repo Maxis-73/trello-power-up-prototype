@@ -23,18 +23,18 @@ function getPriorityDisplayName(priority) {
     return priority.name || '';
 }
 
-// Colores disponibles para badges de Trello
+// Colores disponibles para badges de Trello (usan labelKey para localización)
 var BADGE_COLORS = [
-    { value: 'red', label: 'Rojo', hex: '#EB5A46' },
-    { value: 'orange', label: 'Naranja', hex: '#FFAB4A' },
-    { value: 'yellow', label: 'Amarillo', hex: '#F2D600' },
-    { value: 'green', label: 'Verde', hex: '#61BD4F' },
-    { value: 'blue', label: 'Azul', hex: '#0079BF' },
-    { value: 'purple', label: 'Púrpura', hex: '#C377E0' },
-    { value: 'pink', label: 'Rosa', hex: '#FF80CE' },
-    { value: 'sky', label: 'Celeste', hex: '#00C2E0' },
-    { value: 'lime', label: 'Lima', hex: '#51E898' },
-    { value: 'light-gray', label: 'Gris Claro', hex: '#C4C9CC' }
+    { value: 'red', labelKey: 'color-red', hex: '#EB5A46' },
+    { value: 'orange', labelKey: 'color-orange', hex: '#FFAB4A' },
+    { value: 'yellow', labelKey: 'color-yellow', hex: '#F2D600' },
+    { value: 'green', labelKey: 'color-green', hex: '#61BD4F' },
+    { value: 'blue', labelKey: 'color-blue', hex: '#0079BF' },
+    { value: 'purple', labelKey: 'color-purple', hex: '#C377E0' },
+    { value: 'pink', labelKey: 'color-pink', hex: '#FF80CE' },
+    { value: 'sky', labelKey: 'color-sky', hex: '#00C2E0' },
+    { value: 'lime', labelKey: 'color-lime', hex: '#51E898' },
+    { value: 'light-gray', labelKey: 'color-light-gray', hex: '#C4C9CC' }
 ];
 
 var currentPriorities = [];
@@ -97,7 +97,7 @@ function renderPriorities() {
         BADGE_COLORS.forEach(function (bc) {
             var option = document.createElement('option');
             option.value = bc.value;
-            option.textContent = bc.label;
+            option.textContent = t.localizeKey(bc.labelKey);
             if (priority.badgeColor === bc.value) {
                 option.selected = true;
             }

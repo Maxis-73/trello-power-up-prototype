@@ -22,5 +22,15 @@
     "msg-restored": "Default values restored. Press \"Save\" to apply.",
     "confirm-reset": "Are you sure you want to restore default priorities? Unsaved changes will be lost.",
     "loading": "Loading priorities...",
-    "new-priority": "New Priority"
+    "new-priority": "New Priority",
+    "color-red": "Red",
+    "color-orange": "Orange",
+    "color-yellow": "Yellow",
+    "color-green": "Green",
+    "color-blue": "Blue",
+    "color-purple": "Purple",
+    "color-pink": "Pink",
+    "color-sky": "Sky",
+    "color-lime": "Lime",
+    "color-light-gray": "Light Gray"
 }
