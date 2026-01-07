@@ -6,7 +6,7 @@ var ICON_FLAG = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" vi
 var ICON_SETTINGS = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2"%3E%3Ccircle cx="12" cy="12" r="3"%3E%3C/circle%3E%3Cpath d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"%3E%3C/path%3E%3C/svg%3E';
 
 // Prioridades por defecto (se usan si el usuario no ha configurado las suyas)
-// Usan nameKey para traducción automática según el idioma del usuario
+// Usan nameKey para localización automática
 var DEFAULT_PRIORITIES = [
     { id: '1', nameKey: 'priority-very-high', color: '#EB5A46', badgeColor: 'red' },
     { id: '2', nameKey: 'priority-high', color: '#FFAB4A', badgeColor: 'orange' },
@@ -35,14 +35,14 @@ function getBadgeColorById(priorities, priorityId) {
 }
 
 // Función para obtener el nombre de la prioridad por ID
-// Si tiene nameKey, devuelve la clave para traducir; si tiene name, devuelve el nombre directo
-function getPriorityNameById(t, priorities, priorityId) {
+// Si tiene nameKey, devuelve la clave para localizar; si tiene name, devuelve el nombre directo
+function getPriorityNameById(priorities, priorityId) {
     var found = priorities.find(function (p) {
         return p.id === priorityId;
     });
     if (!found) return null;
-    // Si tiene nameKey (prioridad por defecto), traducir; si tiene name (personalizada), usar directo
-    return found.nameKey ? t.localizeKey(found.nameKey) : found.name;
+    // Prioridades personalizadas usan 'name', las por defecto usan 'nameKey'
+    return { nameKey: found.nameKey, name: found.name };
 }
 
 window.TrelloPowerUp.initialize({
@@ -87,7 +87,11 @@ window.TrelloPowerUp.initialize({
 
             if (prioridad.priorityId) {
                 // Formato nuevo
-                badgeText = getPriorityNameById(t, priorities, prioridad.priorityId);
+                var priorityInfo = getPriorityNameById(priorities, prioridad.priorityId);
+                if (priorityInfo) {
+                    // Si tiene nameKey, usar localización; si no, usar name directo
+                    badgeText = priorityInfo.nameKey ? t.localizeKey(priorityInfo.nameKey) : priorityInfo.name;
+                }
                 badgeColor = getBadgeColorById(priorities, prioridad.priorityId);
             } else if (prioridad.text) {
                 // Formato antiguo - compatibilidad hacia atrás
@@ -132,7 +136,11 @@ window.TrelloPowerUp.initialize({
 
             if (prioridad.priorityId) {
                 // Formato nuevo
-                badgeText = getPriorityNameById(t, priorities, prioridad.priorityId);
+                var priorityInfo = getPriorityNameById(priorities, prioridad.priorityId);
+                if (priorityInfo) {
+                    // Si tiene nameKey, usar localización; si no, usar name directo
+                    badgeText = priorityInfo.nameKey ? t.localizeKey(priorityInfo.nameKey) : priorityInfo.name;
+                }
                 badgeColor = getBadgeColorById(priorities, prioridad.priorityId);
             } else if (prioridad.text) {
                 // Formato antiguo - compatibilidad hacia atrás
