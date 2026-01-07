@@ -58,10 +58,10 @@ window.TrelloPowerUp.initialize({
     'card-buttons': function (t, options) {
         return [{
             icon: ICON_FLAG,
-            text: 'Prioridad',
+            text: t.localizeKey('badge-title'),
             callback: function (t) {
                 return t.popup({
-                    title: 'Seleccionar Prioridad',
+                    title: t.localizeKey('popup-title'),
                     url: 'views/selector-prioridad.html',
                     height: 300
                 });
@@ -117,8 +117,8 @@ window.TrelloPowerUp.initialize({
 
             if (!prioridad) {
                 return [{
-                    title: 'Prioridad',
-                    text: 'Sin Prioridad',
+                    title: t.localizeKey('badge-title'),
+                    text: t.localizeKey('no-priority'),
                     color: null
                 }];
             }
@@ -145,8 +145,8 @@ window.TrelloPowerUp.initialize({
 
             if (!badgeText) {
                 return [{
-                    title: 'Prioridad',
-                    text: 'Sin Prioridad',
+                    title: t.localizeKey('badge-title'),
+                    text: t.localizeKey('no-priority'),
                     color: null
                 }];
             }
